@@ -7,6 +7,7 @@ export const fallbackProfile = {
   email: 'singhmani5995@gmail.com',
   phone: '7508948550',
   location: 'Punjab, India',
+  photo: { url: '/professional-profile.png' },
   typingRoles: ['MCA Student', 'MERN Developer', 'Frontend Engineer', 'Problem Solver'],
   socials: {
     linkedin: '#',
@@ -20,10 +21,10 @@ export const fallbackProfile = {
 export const fallbackProjects = [
   {
     _id: 'p1',
-    title: 'Portfolio CMS',
-    description: 'A premium MERN portfolio with secure admin CMS, Cloudinary uploads, resume management and animated responsive UI.',
-    technologies: ['React', 'Node', 'Express', 'MongoDB', 'Cloudinary'],
-    category: 'MERN',
+    title: 'Developer Portfolio',
+    description: 'A fast, responsive developer portfolio featuring professional experience, skills, projects, certificates and direct contact.',
+    technologies: ['React', 'JavaScript', 'CSS', 'Vite'],
+    category: 'Frontend',
     githubUrl: '#',
     liveUrl: '#',
     featured: true

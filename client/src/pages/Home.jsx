@@ -1,7 +1,7 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { motion } from 'framer-motion';
-import { FiDownload, FiExternalLink, FiGithub, FiMail, FiMapPin, FiPhone, FiPlus, FiSend, FiTrash2, FiUpload, FiUser } from 'react-icons/fi';
+import { FiDownload, FiExternalLink, FiGithub, FiMail, FiMapPin, FiPhone, FiSend, FiUser } from 'react-icons/fi';
 import Button from '../components/common/Button.jsx';
 import Loader from '../components/common/Loader.jsx';
 import Modal from '../components/common/Modal.jsx';
@@ -9,8 +9,6 @@ import SectionTitle from '../components/common/SectionTitle.jsx';
 import Footer from '../components/Footer.jsx';
 import { usePortfolio } from '../hooks/usePortfolio.js';
 import { formatDate } from '../utils/format.js';
-import { sendMessage, trackResumeDownload } from '../services/portfolioService.js';
-import api from '../services/api.js';
 
 const cardMotion = { initial: { opacity: 0, y: 24 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true }, transition: { duration: 0.45 } };
 
@@ -18,115 +16,16 @@ const Home = () => {
   const { data, loading } = usePortfolio();
   const [preview, setPreview] = useState(null);
   const [resumeModalOpen, setResumeModalOpen] = useState(false);
-  const [uploadedPhoto, setUploadedPhoto] = useState('');
-  const [managedProjects, setManagedProjects] = useState(null);
-  const [projectModalOpen, setProjectModalOpen] = useState(false);
-  const [projectToDelete, setProjectToDelete] = useState(null);
-  const [managedCertificates, setManagedCertificates] = useState(null);
-  const [certificateModalOpen, setCertificateModalOpen] = useState(false);
-  const [certificateToDelete, setCertificateToDelete] = useState(null);
-  const photoInputRef = useRef(null);
-  const { register, handleSubmit, reset, formState: { isSubmitting } } = useForm();
-  const {
-    register: registerProject,
-    handleSubmit: handleProjectSubmit,
-    reset: resetProject,
-    formState: { isSubmitting: isSavingProject }
-  } = useForm();
-  const {
-    register: registerCertificate,
-    handleSubmit: handleCertificateSubmit,
-    reset: resetCertificate,
-    formState: { isSubmitting: isSavingCertificate }
-  } = useForm();
+  const { register, handleSubmit } = useForm();
 
-  const projects = managedProjects || data?.projects || [];
-  const certificates = managedCertificates || data?.certificates || [];
+  const projects = data?.projects || [];
+  const certificates = data?.certificates || [];
   const skills = data?.skills || [];
   const profile = data?.profile;
-  const heroPhoto = uploadedPhoto || profile?.photo?.url;
-  const canManageContent = Boolean(localStorage.getItem('portfolio_token'));
+  const heroPhoto = profile?.photo?.url;
 
-  const choosePhoto = () => {
-    photoInputRef.current?.click();
-  };
-
-  const uploadPhoto = async (event) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    setUploadedPhoto(URL.createObjectURL(file));
-    event.target.value = '';
-  };
-
-  const openProjectForm = () => {
-    resetProject({ featured: false });
-    setProjectModalOpen(true);
-  };
-
-  const createProject = async (values) => {
-    const payload = new FormData();
-    Object.entries(values).forEach(([key, value]) => {
-      if (key === 'image' && value?.[0]) payload.append('image', value[0]);
-      else if (key !== 'image') payload.append(key, value);
-    });
-
-    try {
-      const response = await api.post('/projects', payload);
-      setManagedProjects((current) => [response.data, ...(current || data?.projects || [])]);
-      setProjectModalOpen(false);
-      resetProject();
-    } catch {
-      alert('Project could not be added. Please sign in again or check the server.');
-    }
-  };
-
-  const deleteProject = async () => {
-    try {
-      await api.delete(`/projects/${projectToDelete._id}`);
-      setManagedProjects((current) => (current || data?.projects || []).filter((item) => item._id !== projectToDelete._id));
-      setProjectToDelete(null);
-    } catch {
-      alert('Project could not be deleted. Please sign in again or check the server.');
-    }
-  };
-
-  const openCertificateForm = () => {
-    resetCertificate();
-    setCertificateModalOpen(true);
-  };
-
-  const createCertificate = async (values) => {
-    const asset = values.asset?.[0];
-    const payload = new FormData();
-    Object.entries(values).forEach(([key, value]) => {
-      if (key !== 'asset') payload.append(key, value);
-    });
-    if (asset) payload.append(asset.type === 'application/pdf' ? 'pdf' : 'image', asset);
-
-    try {
-      const response = await api.post('/certificates', payload);
-      setManagedCertificates((current) => [response.data, ...(current || data?.certificates || [])]);
-      setCertificateModalOpen(false);
-      resetCertificate();
-    } catch {
-      alert('Certificate could not be added. Please sign in again or check the server.');
-    }
-  };
-
-  const deleteCertificate = async () => {
-    try {
-      await api.delete(`/certificates/${certificateToDelete._id}`);
-      setManagedCertificates((current) => (current || data?.certificates || []).filter((item) => item._id !== certificateToDelete._id));
-      setCertificateToDelete(null);
-    } catch {
-      alert('Certificate could not be deleted. Please sign in again or check the server.');
-    }
-  };
-
-  const downloadResume = async () => {
-    const response = await trackResumeDownload().catch(() => null);
-    const url = response?.data?.url || data?.resume?.url;
+  const downloadResume = () => {
+    const url = data?.resume?.url;
     if (!url) return;
 
     const link = document.createElement('a');
@@ -139,10 +38,11 @@ const Home = () => {
     link.remove();
   };
 
-  const onSubmit = async (values) => {
-    await sendMessage(values);
-    reset();
-    alert('Message sent successfully.');
+  const onSubmit = (values) => {
+    const subject = values.subject || `Portfolio enquiry from ${values.name}`;
+    const body = `Name: ${values.name}\nEmail: ${values.email}\n\n${values.message}`;
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(profile.email)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.open(gmailUrl, '_blank', 'noopener,noreferrer');
   };
 
   if (loading) return <Loader fullScreen />;
@@ -151,33 +51,31 @@ const Home = () => {
     <main>
       <section id="home" className="hero-section">
         <div className="animated-bg"><span /><span /><span /></div>
-        <motion.div className="hero-copy" initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}>
-          <span className="eyebrow">{profile.role}</span>
-          <h1>{profile.name}</h1>
-          <p className="typing">{profile.typingRoles?.join('  |  ')}</p>
-          <p>{profile.bio}</p>
-          <div className="hero-actions">
-            <Button icon={FiDownload} onClick={() => setResumeModalOpen(true)} disabled={!data?.resume?.url}>Download Resume</Button>
-            <Button href="#contact" variant="secondary" icon={FiMail}>Contact Me</Button>
-          </div>
-        </motion.div>
-        <motion.div className="hero-photo" initial={{ opacity: 0, scale: 0.94 }} animate={{ opacity: 1, scale: 1 }}>
-          <div className="hero-photo-frame">
-            {heroPhoto ? (
-              <img src={heroPhoto} alt={profile.name} />
-            ) : (
-              <div className="hero-photo-placeholder">
-                <FiUser />
-                <span>Your photo</span>
-                <small>JPG, PNG or WebP</small>
-              </div>
-            )}
-          </div>
-          <input ref={photoInputRef} className="visually-hidden" type="file" accept="image/*" onChange={uploadPhoto} />
-          <Button className="hero-photo-upload" variant="secondary" icon={FiUpload} onClick={choosePhoto}>
-            {heroPhoto ? 'Change Photo' : 'Upload Photo'}
-          </Button>
-        </motion.div>
+        <div className="hero-content">
+          <motion.div className="hero-copy" initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}>
+            <span className="eyebrow">{profile.role}</span>
+            <h1>{profile.name}</h1>
+            <p className="typing">{profile.typingRoles?.join('  |  ')}</p>
+            <p>{profile.bio}</p>
+            <div className="hero-actions">
+              <Button icon={FiDownload} onClick={() => setResumeModalOpen(true)} disabled={!data?.resume?.url}>Download Resume</Button>
+              <Button href="#contact" variant="secondary" icon={FiMail}>Contact Me</Button>
+            </div>
+          </motion.div>
+          <motion.div className="hero-photo" initial={{ opacity: 0, scale: 0.94 }} animate={{ opacity: 1, scale: 1 }}>
+            <div className="hero-photo-frame">
+              {heroPhoto ? (
+                <img src={heroPhoto} alt={profile.name} />
+              ) : (
+                <div className="hero-photo-placeholder">
+                  <FiUser />
+                  <span>Your photo</span>
+                  <small>JPG, PNG or WebP</small>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </div>
       </section>
 
       <section id="about" className="section">
@@ -213,7 +111,7 @@ const Home = () => {
       </section>
 
       <section id="skills" className="section alt-section">
-        <SectionTitle eyebrow="Skills" title="Technical and soft skills">Progress indicators are editable from the CMS.</SectionTitle>
+        <SectionTitle eyebrow="Skills" title="Technical and soft skills">A practical mix of development knowledge and collaboration skills.</SectionTitle>
         <div className="skill-grid">
           {skills.map((skill) => (
             <motion.article className="skill-card" key={skill._id} {...cardMotion}>
@@ -227,18 +125,10 @@ const Home = () => {
       </section>
 
       <section id="projects" className="section">
-        <div className="section-heading-row">
-          <SectionTitle eyebrow="Projects" title="Selected Work" />
-          {canManageContent && <Button icon={FiPlus} onClick={openProjectForm}>Add Project</Button>}
-        </div>
+        <SectionTitle eyebrow="Projects" title="Selected Work" />
         <div className="project-grid">
           {projects.map((project) => (
             <motion.article className="project-card" key={project._id} {...cardMotion}>
-              {canManageContent && (
-                <button className="project-delete" type="button" onClick={() => setProjectToDelete(project)} aria-label={`Delete ${project.title}`}>
-                  <FiTrash2 />
-                </button>
-              )}
               <div className="project-image">{project.image?.url ? <img src={project.image.url} alt={project.title} /> : <span>{project.category}</span>}</div>
               <div>
                 {project.featured && <strong className="badge">Featured</strong>}
@@ -256,18 +146,10 @@ const Home = () => {
       </section>
 
       <section id="certificates" className="section alt-section">
-        <div className="section-heading-row">
-          <SectionTitle eyebrow="Certificates" title="Credentials">Preview and download certificate assets.</SectionTitle>
-          {canManageContent && <Button icon={FiPlus} onClick={openCertificateForm}>Add Certificate</Button>}
-        </div>
+        <SectionTitle eyebrow="Certificates" title="Credentials">Preview and download certificate assets.</SectionTitle>
         <div className="card-grid">
           {certificates.map((certificate) => (
             <motion.article className="mini-card" key={certificate._id} {...cardMotion}>
-              {canManageContent && (
-                <button className="project-delete" type="button" onClick={() => setCertificateToDelete(certificate)} aria-label={`Delete ${certificate.name}`}>
-                  <FiTrash2 />
-                </button>
-              )}
               <div className="certificate-thumb" onClick={() => setPreview(certificate)}>{certificate.image?.url ? <img src={certificate.image.url} alt={certificate.name} /> : certificate.organization}</div>
               <h3>{certificate.name}</h3>
               <p>{certificate.organization}</p>
@@ -285,7 +167,7 @@ const Home = () => {
         <SectionTitle eyebrow="Contact" title="Let’s build something useful" />
         <div className="contact-grid">
           <div className="contact-list">
-            <p><FiMail /> {profile.email}</p>
+            <p><FiMail /> <a href={`mailto:${profile.email}`}>{profile.email}</a></p>
             <p><FiPhone /> {profile.phone}</p>
             <p><FiMapPin /> {profile.location}</p>
           </div>
@@ -294,7 +176,7 @@ const Home = () => {
             <input {...register('email', { required: true })} type="email" placeholder="Email" />
             <input {...register('subject')} placeholder="Subject" />
             <textarea {...register('message', { required: true })} placeholder="Message" rows="5" />
-            <Button icon={FiSend} disabled={isSubmitting}>{isSubmitting ? 'Sending...' : 'Send Message'}</Button>
+            <Button type="submit" icon={FiSend}>Continue in Gmail</Button>
           </form>
         </div>
       </section>
@@ -313,60 +195,6 @@ const Home = () => {
         <iframe className="resume-modal-preview" src={data?.resume?.url} title="Resume preview" />
         <div className="resume-modal-actions">
           <Button icon={FiDownload} onClick={downloadResume}>Download Resume</Button>
-        </div>
-      </Modal>
-      <Modal open={projectModalOpen} title="Add Project" onClose={() => setProjectModalOpen(false)}>
-        <form className="admin-form project-upload-form" onSubmit={handleProjectSubmit(createProject)}>
-          <input {...registerProject('title', { required: true })} placeholder="Project title" />
-          <textarea {...registerProject('description', { required: true })} placeholder="Project description" rows="4" />
-          <input {...registerProject('technologies', { required: true })} placeholder="Technologies, comma separated" />
-          <input {...registerProject('category')} placeholder="Category (for example MERN)" />
-          <input {...registerProject('githubUrl')} type="url" placeholder="GitHub URL" />
-          <input {...registerProject('liveUrl')} type="url" placeholder="Live demo URL" />
-          <label className="project-image-field">
-            <span>Project image</span>
-            <input {...registerProject('image')} type="file" accept="image/*" />
-          </label>
-          <label className="check-row"><input {...registerProject('featured')} type="checkbox" /> Featured project</label>
-          <Button type="submit" icon={FiUpload} disabled={isSavingProject}>
-            {isSavingProject ? 'Uploading...' : 'Upload Project'}
-          </Button>
-        </form>
-      </Modal>
-      <Modal open={Boolean(projectToDelete)} title="Delete Project" onClose={() => setProjectToDelete(null)}>
-        <div className="delete-project-confirmation">
-          <p>Are you sure you want to delete <strong>{projectToDelete?.title}</strong>?</p>
-          <div className="delete-project-actions">
-            <Button variant="secondary" onClick={() => setProjectToDelete(null)}>Cancel</Button>
-            <Button className="danger-button" icon={FiTrash2} onClick={deleteProject}>Delete Project</Button>
-          </div>
-        </div>
-      </Modal>
-      <Modal open={certificateModalOpen} title="Add Certificate" onClose={() => setCertificateModalOpen(false)}>
-        <form className="admin-form project-upload-form" onSubmit={handleCertificateSubmit(createCertificate)}>
-          <input {...registerCertificate('name', { required: true })} placeholder="Certificate name" />
-          <input {...registerCertificate('organization', { required: true })} placeholder="Organization" />
-          <label className="project-image-field">
-            <span>Issue date</span>
-            <input {...registerCertificate('issueDate', { required: true })} type="date" />
-          </label>
-          <input {...registerCertificate('credentialUrl')} type="url" placeholder="Credential URL" />
-          <label className="project-image-field">
-            <span>Certificate picture or PDF</span>
-            <input {...registerCertificate('asset', { required: true })} type="file" accept="image/*,application/pdf" />
-          </label>
-          <Button type="submit" icon={FiUpload} disabled={isSavingCertificate}>
-            {isSavingCertificate ? 'Adding...' : 'Add Certificate'}
-          </Button>
-        </form>
-      </Modal>
-      <Modal open={Boolean(certificateToDelete)} title="Delete Certificate" onClose={() => setCertificateToDelete(null)}>
-        <div className="delete-project-confirmation">
-          <p>Are you sure you want to delete <strong>{certificateToDelete?.name}</strong>?</p>
-          <div className="delete-project-actions">
-            <Button variant="secondary" onClick={() => setCertificateToDelete(null)}>Cancel</Button>
-            <Button className="danger-button" icon={FiTrash2} onClick={deleteCertificate}>Delete Certificate</Button>
-          </div>
         </div>
       </Modal>
     </main>

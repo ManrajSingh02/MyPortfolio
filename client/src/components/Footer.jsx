@@ -4,13 +4,12 @@ const Footer = ({ profile }) => (
   <footer className="footer">
     <div>
       <h3>{profile?.name || 'Portfolio'}</h3>
-      <p>Designed and built with React, Express, MongoDB and a quietly obsessive amount of polish.</p>
+      <p>Designed and built with React and a quietly obsessive amount of polish.</p>
     </div>
     <div className="footer-links">
       <a href="/#projects">Projects</a>
       <a href="/#skills">Skills</a>
       <a href="/#contact">Contact</a>
-      <a href="/admin/login">Admin Login</a>
     </div>
     <div className="socials">
       <a href={profile?.socials?.linkedin || '#'} aria-label="LinkedIn"><FiLinkedin /></a>
