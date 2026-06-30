@@ -1,7 +1,7 @@
 import { FiDownload } from 'react-icons/fi';
-import Button from '../components/common/Button.jsx';
-import Loader from '../components/common/Loader.jsx';
-import SectionTitle from '../components/common/SectionTitle.jsx';
+import Button from '../components/atoms/Button.jsx';
+import Loader from '../components/atoms/Loader.jsx';
+import SectionTitle from '../components/molecules/SectionTitle.jsx';
 import { usePortfolio } from '../hooks/usePortfolio.js';
 
 const Resume = () => {

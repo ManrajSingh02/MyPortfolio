@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { FiMenu, FiMoon, FiSun, FiX } from 'react-icons/fi';
-import { useTheme } from '../context/ThemeContext.jsx';
+import { useTheme } from '../../context/ThemeContext.jsx';
 
 const links = [
   ['Home', '/#home'],
@@ -31,7 +31,10 @@ const Navbar = () => {
     <header className="site-header">
       <div className="scroll-progress" style={{ width: `${progress}%` }} />
       <nav className="nav-shell">
-        <Link className="brand" to="/">Portfolio<span>.</span></Link>
+        <Link className="brand" to="/" aria-label="Portfolio home">
+          <img className="brand-logo" src="/ms-logo.png" alt="" />
+          <span className="brand-name">Portfolio<span>.</span></span>
+        </Link>
         <div className={open ? 'nav-links open' : 'nav-links'}>
           {links.map(([label, href]) =>
             href.startsWith('/#') ? <a key={label} href={href} onClick={() => setOpen(false)}>{label}</a> : <NavLink key={label} to={href} onClick={() => setOpen(false)}>{label}</NavLink>

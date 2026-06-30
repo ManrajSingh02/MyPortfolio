@@ -1,4 +1,4 @@
-import Button from '../components/common/Button.jsx';
+import Button from '../components/atoms/Button.jsx';
 
 const NotFound = () => (
   <main className="page-top section empty-state">

@@ -2,21 +2,23 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { motion } from 'framer-motion';
 import { FiDownload, FiExternalLink, FiGithub, FiMail, FiMapPin, FiPhone, FiSend, FiUser } from 'react-icons/fi';
-import Button from '../components/common/Button.jsx';
-import Loader from '../components/common/Loader.jsx';
-import Modal from '../components/common/Modal.jsx';
-import SectionTitle from '../components/common/SectionTitle.jsx';
-import Footer from '../components/Footer.jsx';
+import Button from '../components/atoms/Button.jsx';
+import Loader from '../components/atoms/Loader.jsx';
+import Modal from '../components/molecules/Modal.jsx';
+import SectionTitle from '../components/molecules/SectionTitle.jsx';
+import Footer from '../components/organisms/Footer.jsx';
 import { usePortfolio } from '../hooks/usePortfolio.js';
 import { formatDate } from '../utils/format.js';
 
 const cardMotion = { initial: { opacity: 0, y: 24 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true }, transition: { duration: 0.45 } };
+const apiBaseUrl = import.meta.env.VITE_API_URL || '';
 
 const Home = () => {
   const { data, loading } = usePortfolio();
   const [preview, setPreview] = useState(null);
   const [resumeModalOpen, setResumeModalOpen] = useState(false);
-  const { register, handleSubmit } = useForm();
+  const [contactStatus, setContactStatus] = useState({ type: '', message: '' });
+  const { register, handleSubmit, reset, formState: { isSubmitting } } = useForm();
 
   const projects = data?.projects || [];
   const certificates = data?.certificates || [];
@@ -38,11 +40,35 @@ const Home = () => {
     link.remove();
   };
 
-  const onSubmit = (values) => {
-    const subject = values.subject || `Portfolio enquiry from ${values.name}`;
-    const body = `Name: ${values.name}\nEmail: ${values.email}\n\n${values.message}`;
-    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(profile.email)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    window.open(gmailUrl, '_blank', 'noopener,noreferrer');
+  const onSubmit = async (values) => {
+    setContactStatus({ type: '', message: '' });
+
+    try {
+      const response = await fetch(`${apiBaseUrl}/api/contact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(values)
+      });
+      const responseText = await response.text();
+      let result = {};
+
+      if (responseText) {
+        try {
+          result = JSON.parse(responseText);
+        } catch {
+          result = {};
+        }
+      }
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Email service is unavailable. Please try again later or email me directly.');
+      }
+
+      reset();
+      setContactStatus({ type: 'success', message: 'Message sent successfully.' });
+    } catch (error) {
+      setContactStatus({ type: 'error', message: error.message || 'Email service is unavailable. Please try again later or email me directly.' });
+    }
   };
 
   if (loading) return <Loader fullScreen />;
@@ -176,7 +202,12 @@ const Home = () => {
             <input {...register('email', { required: true })} type="email" placeholder="Email" />
             <input {...register('subject')} placeholder="Subject" />
             <textarea {...register('message', { required: true })} placeholder="Message" rows="5" />
-            <Button type="submit" icon={FiSend}>Continue in Gmail</Button>
+            <Button type="submit" icon={FiSend} disabled={isSubmitting}>
+              {isSubmitting ? 'Sending…' : 'Send Message'}
+            </Button>
+            {contactStatus.message && (
+              <p className={`form-status ${contactStatus.type}`} role="status">{contactStatus.message}</p>
+            )}
           </form>
         </div>
       </section>
