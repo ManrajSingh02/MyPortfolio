@@ -50,6 +50,7 @@ img { max-width: 100%; display: block; }
 .nav-links a.active, .nav-links a:hover { color: var(--text); }
 .nav-actions, .hero-actions, .card-actions, .socials { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
 .icon-btn, .socials a, .socials button { width: 42px; height: 42px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--text); display: grid; place-items: center; }
+.back-to-top { position: fixed; right: 24px; bottom: 24px; z-index: 70; backdrop-filter: blur(18px); box-shadow: 0 16px 40px rgba(0, 0, 0, .34); }
 .menu-btn { display: none; }
 
 .hero-section { min-height: 100vh; padding: 140px 24px 70px; max-width: 1180px; margin: 0 auto; display: flex; align-items: center; position: relative; overflow: hidden; }
@@ -162,4 +163,5 @@ textarea { resize: vertical; }
   .hero-copy h1 { font-size: 3.2rem; }
   .skill-grid, .project-grid, .card-grid { grid-template-columns: 1fr; }
   .section { padding: 70px 18px; }
+  .back-to-top { right: 16px; bottom: 16px; }
 }
