@@ -10,8 +10,8 @@ export const fallbackProfile = {
   photo: { url: '/professional-profile.png' },
   typingRoles: ['MCA Student', 'MERN Developer', 'Frontend Engineer', 'Problem Solver'],
   socials: {
-    linkedin: '#',
-    github: '#',
+    linkedin: 'https://www.linkedin.com/in/manraj-singh-998983232',
+    github: 'https://github.com/ManrajSingh02',
     instagram: '#',
     leetcode: '#',
     codechef: '#'

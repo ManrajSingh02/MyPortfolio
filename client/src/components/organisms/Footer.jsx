@@ -1,4 +1,4 @@
-import { FiArrowUp, FiGithub, FiInstagram, FiLinkedin } from 'react-icons/fi';
+import { FiArrowUp, FiGithub, FiLinkedin } from 'react-icons/fi';
 
 const Footer = ({ profile }) => (
   <footer className="footer">
@@ -14,7 +14,6 @@ const Footer = ({ profile }) => (
     <div className="socials">
       <a href={profile?.socials?.linkedin || '#'} aria-label="LinkedIn"><FiLinkedin /></a>
       <a href={profile?.socials?.github || '#'} aria-label="GitHub"><FiGithub /></a>
-      <a href={profile?.socials?.instagram || '#'} aria-label="Instagram"><FiInstagram /></a>
       <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} aria-label="Back to top" type="button"><FiArrowUp /></button>
     </div>
     <small>Copyright {new Date().getFullYear()} {profile?.name || 'Portfolio'}. All rights reserved.</small>
