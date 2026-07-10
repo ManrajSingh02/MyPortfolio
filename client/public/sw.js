@@ -1,12 +1,11 @@
-const CACHE_NAME = 'manraj-portfolio-v1';
+const CACHE_NAME = 'manraj-portfolio-v2';
 const APP_SHELL = [
   '/',
   '/index.html',
   '/manifest.webmanifest',
   '/favicon.svg',
   '/ms-logo.png',
-  '/professional-profile.png',
-  '/resume/Manraj_Singh_Resume.pdf'
+  '/professional-profile.png'
 ];
 
 self.addEventListener('install', (event) => {

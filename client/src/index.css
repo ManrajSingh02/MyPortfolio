@@ -96,10 +96,12 @@ img { max-width: 100%; display: block; }
 .circle-progress span { width: 78px; height: 78px; border-radius: inherit; background: var(--surface-strong); display: grid; place-items: center; font-weight: 900; }
 .bar { height: 8px; background: rgba(255,255,255,.1); border-radius: 999px; overflow: hidden; }
 .bar span { display: block; height: 100%; background: linear-gradient(90deg, var(--blue), var(--purple)); }
-.project-card { overflow: hidden; display: grid; grid-template-rows: 210px 1fr; position: relative; }
-.project-card > div:last-child { padding: 20px; }
-.project-image, .certificate-thumb { min-height: 180px; display: grid; place-items: center; background: linear-gradient(135deg, rgba(53,183,255,.22), rgba(155,92,255,.24)); color: var(--text); font-weight: 900; }
-.project-image img, .certificate-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.project-card { overflow: hidden; display: flex; flex-direction: column; position: relative; }
+.project-content { padding: 20px; background: var(--surface); position: relative; z-index: 1; }
+.project-image, .certificate-thumb { min-height: 180px; display: grid; place-items: center; background: linear-gradient(135deg, rgba(53,183,255,.22), rgba(155,92,255,.24)); color: var(--text); font-weight: 900; overflow: hidden; }
+.project-image { height: 240px; padding: 18px; background: rgba(255,255,255,.88); }
+.project-image img, .certificate-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.project-image img { object-fit: contain; }
 .certificate-pdf-preview { width: 100%; height: min(68vh, 720px); margin-top: 14px; border: 1px solid var(--line); border-radius: 8px; background: white; }
 .badge, .chips span { display: inline-flex; padding: 6px 10px; border-radius: 999px; background: rgba(73, 214, 160, .15); color: var(--green); font-size: .78rem; }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }

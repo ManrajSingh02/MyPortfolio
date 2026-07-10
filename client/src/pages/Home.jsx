@@ -1,20 +1,23 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { motion } from 'framer-motion';
-import { FiDownload, FiExternalLink, FiGithub, FiMail, FiMapPin, FiPhone, FiSend, FiUser } from 'react-icons/fi';
+import { FiDownload, FiExternalLink, FiMail, FiMapPin, FiPhone, FiSend } from 'react-icons/fi';
 import Button from '../components/atoms/Button.jsx';
-import Loader from '../components/atoms/Loader.jsx';
 import Modal from '../components/molecules/Modal.jsx';
 import SectionTitle from '../components/molecules/SectionTitle.jsx';
 import Footer from '../components/organisms/Footer.jsx';
-import { usePortfolio } from '../hooks/usePortfolio.js';
+import Hero from '../components/organisms/Hero.jsx';
+import Projects from '../components/organisms/Projects.jsx';
+import { usePortfolio } from '../context/portfolioContext.jsx';
 import { formatDate } from '../utils/format.js';
 
 const cardMotion = { initial: { opacity: 0, y: 24 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true }, transition: { duration: 0.45 } };
-const apiBaseUrl = import.meta.env.VITE_API_URL || '';
+const apiBaseUrl = import.meta.env.DEV
+  ? ''
+  : (import.meta.env.VITE_API_URL || '').trim().replace(/\/+$/, '').replace(/\/api$/, '');
 
 const Home = () => {
-  const { data, loading } = usePortfolio();
+  const data = usePortfolio();
   const [preview, setPreview] = useState(null);
   const [resumeModalOpen, setResumeModalOpen] = useState(false);
   const [contactStatus, setContactStatus] = useState({ type: '', message: '' });
@@ -24,7 +27,6 @@ const Home = () => {
   const certificates = data?.certificates || [];
   const skills = data?.skills || [];
   const profile = data?.profile;
-  const heroPhoto = profile?.photo?.url;
 
   const downloadResume = () => {
     const url = data?.resume?.url;
@@ -71,38 +73,9 @@ const Home = () => {
     }
   };
 
-  if (loading) return <Loader fullScreen />;
-
   return (
     <main>
-      <section id="home" className="hero-section">
-        <div className="animated-bg"><span /><span /><span /></div>
-        <div className="hero-content">
-          <motion.div className="hero-copy" initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}>
-            <span className="eyebrow">{profile.role}</span>
-            <h1>{profile.name}</h1>
-            <p className="typing">{profile.typingRoles?.join('  |  ')}</p>
-            <p>{profile.bio}</p>
-            <div className="hero-actions">
-              <Button icon={FiDownload} onClick={() => setResumeModalOpen(true)} disabled={!data?.resume?.url}>Download Resume</Button>
-              <Button href="#contact" variant="secondary" icon={FiMail}>Contact Me</Button>
-            </div>
-          </motion.div>
-          <motion.div className="hero-photo" initial={{ opacity: 0, scale: 0.94 }} animate={{ opacity: 1, scale: 1 }}>
-            <div className="hero-photo-frame">
-              {heroPhoto ? (
-                <img src={heroPhoto} alt={profile.name} />
-              ) : (
-                <div className="hero-photo-placeholder">
-                  <FiUser />
-                  <span>Your photo</span>
-                  <small>JPG, PNG or WebP</small>
-                </div>
-              )}
-            </div>
-          </motion.div>
-        </div>
-      </section>
+      <Hero profile={profile} resume={data.resume} onOpenResume={() => setResumeModalOpen(true)} />
 
       <section id="about" className="section">
         <SectionTitle eyebrow="About" title="Career Objective">{profile.careerObjective}</SectionTitle>
@@ -125,7 +98,7 @@ const Home = () => {
             <div className="timeline">
               {data.experience.map((item) => (
                 <article key={item._id}>
-                  <span>{formatDate(item.startDate)} - {item.current ? 'Present' : formatDate(item.endDate)}</span>
+                  <span>{item.duration || `${formatDate(item.startDate)} - ${item.current ? 'Present' : formatDate(item.endDate)}`}</span>
                   <h4>{item.role}</h4>
                   <p>{item.company} - {item.type}</p>
                   <small>{item.description}</small>
@@ -150,26 +123,7 @@ const Home = () => {
         </div>
       </section>
 
-      <section id="projects" className="section">
-        <SectionTitle eyebrow="Projects" title="Selected Work" />
-        <div className="project-grid">
-          {projects.map((project) => (
-            <motion.article className="project-card" key={project._id} {...cardMotion}>
-              <div className="project-image">{project.image?.url ? <img src={project.image.url} alt={project.title} /> : <span>{project.category}</span>}</div>
-              <div>
-                {project.featured && <strong className="badge">Featured</strong>}
-                <h3>{project.title}</h3>
-                <p>{project.description}</p>
-                <div className="chips">{project.technologies?.map((tech) => <span key={tech}>{tech}</span>)}</div>
-                <div className="card-actions">
-                  <a href={project.githubUrl || '#'}><FiGithub /> GitHub</a>
-                  <a href={project.liveUrl || '#'}><FiExternalLink /> Live Demo</a>
-                </div>
-              </div>
-            </motion.article>
-          ))}
-        </div>
-      </section>
+      <Projects projects={projects} />
 
       <section id="certificates" className="section alt-section">
         <SectionTitle eyebrow="Certificates" title="Credentials">Preview and download certificate assets.</SectionTitle>

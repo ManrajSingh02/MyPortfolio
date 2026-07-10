@@ -1,18 +1,15 @@
 import { FiDownload } from 'react-icons/fi';
 import Button from '../components/atoms/Button.jsx';
-import Loader from '../components/atoms/Loader.jsx';
 import SectionTitle from '../components/molecules/SectionTitle.jsx';
-import { usePortfolio } from '../hooks/usePortfolio.js';
+import { usePortfolio } from '../context/portfolioContext.jsx';
 
 const Resume = () => {
-  const { data, loading } = usePortfolio();
+  const data = usePortfolio();
 
   const downloadResume = () => {
     const url = data?.resume?.url;
     if (url) window.open(url, '_blank', 'noopener,noreferrer');
   };
-
-  if (loading) return <Loader fullScreen />;
 
   return (
     <main className="page-top section">
