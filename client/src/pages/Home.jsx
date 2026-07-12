@@ -18,6 +18,8 @@ const apiBaseUrl = import.meta.env.DEV
 
 const Home = () => {
   const data = usePortfolio();
+
+  console.log('Portfolio data:', data);
   const [preview, setPreview] = useState(null);
   const [resumeModalOpen, setResumeModalOpen] = useState(false);
   const [contactStatus, setContactStatus] = useState({ type: '', message: '' });
