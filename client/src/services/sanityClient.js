@@ -9,7 +9,8 @@ export const client = canUseSanity
   ? createClient({
       projectId,
       dataset,
-      apiVersion: import.meta.env.VITE_SANITY_API_VERSION?.trim() || "2026-07-06",
+     apiVersion:
+  import.meta.env.VITE_SANITY_API_VERSION?.trim() || "2025-07-01",
       useCdn: true,
     })
   : null;

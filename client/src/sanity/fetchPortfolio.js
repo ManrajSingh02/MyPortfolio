@@ -1,23 +1,22 @@
-export const canUseSanity = true;
-const apiBaseUrl = import.meta.env.DEV
-  ? ""
-  : (import.meta.env.VITE_API_URL || "")
-      .trim()
-      .replace(/\/+$/, "")
-      .replace(/\/api$/, "");
+import { client, canUseSanity } from "../services/sanityClient";
+import { portfolioQuery } from "./portfolioQuery";
 
 export const fetchPortfolioFromSanity = async () => {
-  const response = await fetch(`${apiBaseUrl}/api/portfolio`);
-
-  console.log("apiBaseUrl:", apiBaseUrl);
-  console.log("response>>:", response);
-  console.log(
-    "`${apiBaseUrl}/api/portfolio`>>:",
-    `${apiBaseUrl}/api/portfolio`,
-  );
-  if (!response.ok) {
-    throw new Error("Unable to load portfolio content.");
+  if (!canUseSanity || !client) {
+    console.warn("Sanity is not configured.");
+    return null;
   }
 
-  return response.json();
+  try {
+    const data = await client.fetch(portfolioQuery);
+
+    console.log("Sanity Portfolio:", data);
+
+    return data;
+  } catch (error) {
+    console.error("Sanity Fetch Error:", error);
+    throw error;
+  }
 };
+
+export { canUseSanity };
