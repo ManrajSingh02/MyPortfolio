@@ -1,11 +1,16 @@
-import { sendPortfolioEmail } from '../services/resendService.js';
-import { validateContact } from '../utils/validateContact.js';
+import { sendPortfolioEmail } from "../services/resendService.js";
+import { validateContact } from "../utils/validateContact.js";
 
-export const sendContactMessage = async (request, response, next) => {
+export const sendContactMessage = async (req, res, next) => {
   try {
-    const contact = validateContact(request.body);
+    const contact = validateContact(req.body);
+
     await sendPortfolioEmail(contact);
-    response.status(200).json({ message: 'Message sent successfully.' });
+
+    return res.status(200).json({
+      success: true,
+      message: "Message sent successfully.",
+    });
   } catch (error) {
     next(error);
   }
